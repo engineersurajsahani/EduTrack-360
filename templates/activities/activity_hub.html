@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Extracurricular Activities Hub - EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Header Banner -->
+    <div class="col-12">
+        <div class="hero-gradient d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <h2 class="text-white mb-1 fw-bold">Extracurricular Activity Hub</h2>
+                <p class="text-white text-opacity-75 mb-0">Upload and verify NSS, Cultural, Sports, Internship & Technical achievements to earn verified points & digital badges.</p>
+            </div>
+            <a href="{% url 'activities:upload_certificate' %}" class="btn btn-warning text-dark fw-bold btn-lg d-inline-flex align-items-center gap-2 shadow">
+                <span class="material-symbols-outlined">upload_file</span> Upload New Certificate
+            </a>
+        </div>
+    </div>
+
+    <!-- Category Cards Grid (Plan 2 Section 16-24) -->
+    {% for cat_stat in category_progress %}
+    <div class="col-md-6 col-lg-4">
+        <div class="md-card h-100 d-flex flex-column">
+            <div class="md-card-header bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-{{ cat_stat.category.color_class }}" style="font-size: 28px;">
+                        {{ cat_stat.category.icon }}
+                    </span>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-dark">{{ cat_stat.category.name }}</h6>
+                        <small class="text-muted">Target: {{ cat_stat.target_points }} Points</small>
+                    </div>
+                </div>
+                <span class="badge bg-{{ cat_stat.color_status }} fs-6">{{ cat_stat.percentage }}%</span>
+            </div>
+            <div class="md-card-body flex-grow-1">
+                <!-- Progress bar -->
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="small fw-bold text-muted">Activity Score</span>
+                    <span class="small fw-bold text-{{ cat_stat.color_status }}">{{ cat_stat.points_earned }} / {{ cat_stat.target_points }} Pts</span>
+                </div>
+                <div class="progress progress-custom mb-3">
+                    <div class="progress-bar progress-bar-{{ cat_stat.color_status }}" style="width: {{ cat_stat.percentage }}%;"></div>
+                </div>
+
+                <div class="small text-muted mb-3">
+                    Verified Certificates: <strong>{{ cat_stat.certs_count }} Approved</strong>
+                </div>
+                <p class="small text-secondary mb-0">
+                    {{ cat_stat.category.description|default:'Participate in institutional and national level events to boost your holistic score.' }}
+                </p>
+            </div>
+            <div class="p-3 border-top bg-light bg-opacity-25 d-flex gap-2 mt-auto">
+                <a href="{% url 'activities:category_detail' cat_stat.category.code %}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                    View Records
+                </a>
+                <a href="{% url 'activities:upload_certificate' %}?category={{ cat_stat.category.id }}" class="btn btn-sm btn-md-secondary">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">add</span> Upload
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Recent Uploads Table -->
+    <div class="col-12">
+        <div class="md-card">
+            <div class="md-card-header bg-light">
+                <h5 class="mb-0 fw-bold">Recent Extracurricular Uploads</h5>
+            </div>
+            <div class="md-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Activity / Event Title</th>
+                                <th>Organization</th>
+                                <th>Level</th>
+                                <th>Role / Achievement</th>
+                                <th>Date</th>
+                                <th>Points</th>
+                                <th>Status</th>
+                                <th>Proof</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cert in recent_certificates %}
+                            <tr>
+                                <td><span class="badge bg-light text-dark border">{{ cert.category.name }}</span></td>
+                                <td class="fw-bold">{{ cert.title }}</td>
+                                <td>{{ cert.organization|default:'-' }}</td>
+                                <td>{{ cert.get_level_display }}</td>
+                                <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ cert.get_achievement_role_display }}</span></td>
+                                <td>{{ cert.event_date|date:"M d, Y" }}</td>
+                                <td><strong class="text-success">+{{ cert.points_awarded }}</strong></td>
+                                <td>
+                                    {% if cert.status == 'APPROVED' %}
+                                        <span class="badge bg-success">✓ Verified</span>
+                                    {% elif cert.status == 'PENDING' %}
+                                        <span class="badge bg-warning text-dark">🟡 Pending</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">✗ Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if cert.certificate_file %}
+                                        <a href="{{ cert.certificate_file.url }}" target="_blank" class="btn btn-sm btn-outline-dark d-inline-flex align-items-center gap-1">
+                                            <span class="material-symbols-outlined" style="font-size:16px;">visibility</span> File
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="9" class="text-center py-4 text-muted">No certificates uploaded yet. Click "Upload New Certificate" above!</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

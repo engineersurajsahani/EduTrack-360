@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Certificate Verification - {{ certificate.certificate_id }} | EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-8 col-lg-6">
+        <div class="md-card p-4 p-md-5 text-center certificate-preview-box">
+            <!-- Verification Seal -->
+            <div class="d-inline-flex p-3 rounded-circle bg-success bg-opacity-10 text-success mb-3">
+                <span class="material-symbols-outlined" style="font-size: 56px;">verified</span>
+            </div>
+
+            <div class="pill-badge pill-badge-green mb-3 fs-6">
+                <span class="material-symbols-outlined">check_circle</span>
+                OFFICIALLY VERIFIED & VALID RECORD
+            </div>
+
+            <h3 class="fw-bold brand-font text-primary mb-1">{{ certificate.title }}</h3>
+            <div class="badge bg-light text-dark border px-3 py-1 mb-4">Certificate ID: {{ certificate.certificate_id }}</div>
+
+            <!-- Student Card Info -->
+            <div class="p-4 bg-light rounded-4 border text-start mb-4">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <small class="text-muted text-uppercase fw-bold">Awarded To</small>
+                        <div class="fw-bold fs-5 text-dark">{{ student.user.get_full_name }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted text-uppercase fw-bold">PRN & Roll Number</small>
+                        <div class="fw-bold text-dark">{{ student.prn }} (Roll: {{ student.roll_no }})</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted text-uppercase fw-bold">Department & Branch</small>
+                        <div class="fw-bold text-dark">{{ student.branch.name }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted text-uppercase fw-bold">Issue Date</small>
+                        <div class="fw-bold text-dark">{{ certificate.issue_date|date:"F d, Y" }}</div>
+                    </div>
+                    {% if certificate.score_percentage > 0 %}
+                    <div class="col-12 border-top pt-2">
+                        <small class="text-muted text-uppercase fw-bold">Performance Metric</small>
+                        <div class="fw-bold text-success fs-5">Overall Score: {{ certificate.score_percentage }}%</div>
+                    </div>
+                    {% endif %}
+                    <div class="col-12 border-top pt-2">
+                        <small class="text-muted text-uppercase fw-bold">Achievement Citation</small>
+                        <p class="small mb-0 text-secondary">{{ certificate.achievement_text }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="small text-muted mb-4">
+                <strong>Issuing Authority:</strong> {{ certificate.issued_by }}<br>
+                <span class="text-secondary">Secured Digital Verification Hash: SHA256-{{ certificate.uuid.hex|slice:":16"|upper }}</span>
+            </div>
+
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{% url 'certificates:download_certificate_pdf' certificate.certificate_id %}" class="btn btn-md-primary">
+                    <span class="material-symbols-outlined">download</span> Download Official PDF
+                </a>
+                <a href="{% url 'students:portfolio' student.id %}" class="btn btn-md-outline">
+                    <span class="material-symbols-outlined">auto_stories</span> View Student Portfolio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

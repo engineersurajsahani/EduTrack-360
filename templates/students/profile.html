@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Portfolio Profile Settings - EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-3">
+    <div class="col-lg-8">
+        <div class="md-card">
+            <div class="md-card-header bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">badge</span>
+                    <h5 class="mb-0 fw-bold">Student Portfolio Profile & Links</h5>
+                </div>
+            </div>
+            <div class="md-card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Permanent Registration Number (PRN)</label>
+                            <input type="text" class="form-control bg-light" value="{{ student.prn }}" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Roll Number</label>
+                            <input type="text" class="form-control bg-light" value="{{ student.roll_no }}" readonly>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-muted">Professional Headline</label>
+                            <input type="text" name="headline" class="form-control" value="{{ student.headline }}" placeholder="e.g. Computer Engineering Student | Full Stack & AI Enthusiast">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-muted">Bio / Career Objective</label>
+                            <textarea name="bio" class="form-control" rows="3" placeholder="Brief summary of your academic journey, aspirations, and interests...">{{ student.bio|default:'' }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">GitHub Profile URL</label>
+                            <input type="url" name="github_url" class="form-control" value="{{ student.github_url|default:'' }}" placeholder="https://github.com/your-username">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">LinkedIn Profile URL</label>
+                            <input type="url" name="linkedin_url" class="form-control" value="{{ student.linkedin_url|default:'' }}" placeholder="https://linkedin.com/in/your-profile">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-muted">Key Skills (Comma separated)</label>
+                            <input type="text" name="skills" class="form-control" value="{{ student.skills }}" placeholder="e.g. Python, Java, Django, SQL, Machine Learning, Git">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="submit" class="btn btn-md-primary">
+                            <span class="material-symbols-outlined">save</span> Update Portfolio
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

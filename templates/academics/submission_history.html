@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Submission History - EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="hero-gradient d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <h2 class="text-white mb-1 fw-bold">My Submission History</h2>
+                <p class="text-white text-opacity-75 mb-0">Track all graded assignments, microproject milestones, and practical uploads.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <span class="badge bg-success fs-6 px-3 py-2">Approved: {{ summary.approved }}</span>
+                <span class="badge bg-warning text-dark fs-6 px-3 py-2">Pending: {{ summary.pending }}</span>
+                <span class="badge bg-danger fs-6 px-3 py-2">Rejected: {{ summary.rejected }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Table -->
+    <div class="col-12">
+        <div class="md-card">
+            <div class="md-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Work / Task Title</th>
+                                <th>Type</th>
+                                <th>Submitted On</th>
+                                <th>Status</th>
+                                <th>Marks</th>
+                                <th>Faculty Remarks</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sub in submissions %}
+                            <tr>
+                                <td class="fw-bold text-primary">{{ sub.task.subject.code }}</td>
+                                <td class="fw-bold">{{ sub.task.title }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ sub.task.get_task_type_display }}</span></td>
+                                <td>{{ sub.submitted_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    {% if sub.status == 'APPROVED' %}
+                                        <span class="badge bg-success">✓ Approved</span>
+                                    {% elif sub.status == 'PENDING' %}
+                                        <span class="badge bg-warning text-dark">🟡 Pending Approval</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">✗ Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if sub.marks_obtained is not None %}
+                                        <strong>{{ sub.marks_obtained }}</strong>/{{ sub.task.max_marks }}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if sub.faculty_remark %}
+                                        <div class="small {% if sub.status == 'REJECTED' %}text-danger fw-bold{% else %}text-muted{% endif %}">
+                                            {{ sub.faculty_remark }}
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted small">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'academics:task_detail' sub.task.id %}" class="btn btn-sm btn-outline-primary">
+                                        {% if sub.status == 'REJECTED' %}Re-Upload{% else %}View{% endif %}
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">No submissions found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

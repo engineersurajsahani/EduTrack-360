@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}Semester Leaderboard - EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Header Banner -->
+    <div class="col-12">
+        <div class="hero-gradient d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <h2 class="text-white mb-1 fw-bold d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined fs-2 text-warning">emoji_events</span>
+                    Semester Leaderboard & Honor Roll
+                </h2>
+                <p class="text-white text-opacity-75 mb-0">Live academic & extracurricular performance rankings.</p>
+            </div>
+            <a href="{% url 'dashboard:export_excel' %}" class="btn btn-light fw-bold d-inline-flex align-items-center gap-2">
+                <span class="material-symbols-outlined">download</span> Export Leaderboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters Row -->
+    <div class="col-12">
+        <div class="md-card p-3">
+            <form method="get" class="row g-3 align-items-center">
+                <div class="col-md-5">
+                    <label class="form-label small fw-bold text-muted">Filter by Branch</label>
+                    <select name="branch" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Engineering Branches</option>
+                        {% for b in branches %}
+                            <option value="{{ b.id }}" {% if selected_branch == b.id|stringformat:"s" %}selected{% endif %}>{{ b.name }} ({{ b.code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label small fw-bold text-muted">Filter by Semester</label>
+                    <select name="semester" class="form-select" onchange="this.form.submit()">
+                        <option value="">All Semesters</option>
+                        {% for s in semesters %}
+                            <option value="{{ s.id }}" {% if selected_semester == s.id|stringformat:"s" %}selected{% endif %}>Semester {{ s.roman_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <a href="{% url 'dashboard:leaderboard' %}" class="btn btn-outline-secondary w-100 mt-4">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Top 3 Podium Cards -->
+    {% if ranked_students|length >= 3 %}
+    <div class="col-12">
+        <div class="row g-3 justify-content-center text-center">
+            <!-- Rank 2 (Silver) -->
+            <div class="col-md-4 order-2 order-md-1">
+                <div class="md-card p-4 h-100" style="border-top: 5px solid #9e9e9e !important;">
+                    <div class="fs-1 mb-2">🥈</div>
+                    <span class="badge bg-secondary rounded-pill px-3 py-1 mb-2">Rank #2</span>
+                    <h5 class="fw-bold mb-1">{{ ranked_students.1.student.user.get_full_name }}</h5>
+                    <div class="small text-muted mb-2">PRN: {{ ranked_students.1.student.prn }} | {{ ranked_students.1.student.branch.code }}</div>
+                    <div class="fs-4 fw-bold text-primary">{{ ranked_students.1.overall_progress }}%</div>
+                    <small class="text-muted">Attendance: {{ ranked_students.1.attendance }}%</small>
+                </div>
+            </div>
+
+            <!-- Rank 1 (Gold) -->
+            <div class="col-md-4 order-1 order-md-2">
+                <div class="md-card p-4 h-100 shadow-lg" style="border-top: 6px solid #ffd700 !important; transform: scale(1.04);">
+                    <div class="fs-1 mb-2">🥇</div>
+                    <span class="badge bg-warning text-dark rounded-pill px-3 py-1 mb-2 fw-bold">Rank #1 (Topper)</span>
+                    <h4 class="fw-bold mb-1 text-primary">{{ ranked_students.0.student.user.get_full_name }}</h4>
+                    <div class="small text-muted mb-2">PRN: {{ ranked_students.0.student.prn }} | {{ ranked_students.0.student.branch.code }}</div>
+                    <div class="fs-2 fw-bold text-success">{{ ranked_students.0.overall_progress }}%</div>
+                    <small class="text-muted">Attendance: {{ ranked_students.0.attendance }}% | Badges: {{ ranked_students.0.badges_count }}</small>
+                </div>
+            </div>
+
+            <!-- Rank 3 (Bronze) -->
+            <div class="col-md-4 order-3">
+                <div class="md-card p-4 h-100" style="border-top: 5px solid #cd7f32 !important;">
+                    <div class="fs-1 mb-2">🥉</div>
+                    <span class="badge bg-danger rounded-pill px-3 py-1 mb-2">Rank #3</span>
+                    <h5 class="fw-bold mb-1">{{ ranked_students.2.student.user.get_full_name }}</h5>
+                    <div class="small text-muted mb-2">PRN: {{ ranked_students.2.student.prn }} | {{ ranked_students.2.student.branch.code }}</div>
+                    <div class="fs-4 fw-bold text-primary">{{ ranked_students.2.overall_progress }}%</div>
+                    <small class="text-muted">Attendance: {{ ranked_students.2.attendance }}%</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Full Leaderboard Table -->
+    <div class="col-12">
+        <div class="md-card">
+            <div class="md-card-header bg-light">
+                <h5 class="mb-0 fw-bold">Complete Ranking Table</h5>
+            </div>
+            <div class="md-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Student</th>
+                                <th>PRN & Roll</th>
+                                <th>Branch & Sem</th>
+                                <th>Academic %</th>
+                                <th>Attendance %</th>
+                                <th>Badges</th>
+                                <th>Overall Score</th>
+                                <th>Profile</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in ranked_students %}
+                            <tr {% if item.rank == 1 %}class="table-warning bg-opacity-25"{% endif %}>
+                                <td class="fw-bold fs-5">
+                                    {% if item.rank == 1 %}🥇 1{% elif item.rank == 2 %}🥈 2{% elif item.rank == 3 %}🥉 3{% else %}#{{ item.rank }}{% endif %}
+                                </td>
+                                <td>
+                                    <div class="fw-bold">{{ item.student.user.get_full_name|default:item.student.user.username }}</div>
+                                </td>
+                                <td>{{ item.student.prn }} <small class="text-muted">(Roll: {{ item.student.roll_no }})</small></td>
+                                <td>{{ item.student.branch.code }} - Sem {{ item.student.semester.roman_name }}</td>
+                                <td class="fw-bold text-primary">{{ item.academic_pct }}%</td>
+                                <td>{{ item.attendance }}%</td>
+                                <td><span class="badge bg-light text-dark border">{{ item.badges_count }} ⭐</span></td>
+                                <td>
+                                    <span class="pill-badge pill-badge-{{ item.color_status }}">
+                                        {{ item.overall_progress }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'students:portfolio' item.student.id %}" class="btn btn-sm btn-outline-primary">Portfolio</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="9" class="text-center py-4 text-muted">No students found matching current filter criteria.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

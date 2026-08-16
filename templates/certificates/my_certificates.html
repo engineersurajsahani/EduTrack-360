@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}My Digital Certificates & Badges - EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Header Banner -->
+    <div class="col-12">
+        <div class="hero-gradient d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <h2 class="text-white mb-1 fw-bold d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined fs-2 text-warning">workspace_premium</span>
+                    Awards, Certificates & Digital Badges
+                </h2>
+                <p class="text-white text-opacity-75 mb-0">Official tamper-proof institutional certificates with verifiable digital QR codes.</p>
+            </div>
+            <a href="{% url 'certificates:request_noc' %}" class="btn btn-light fw-bold d-inline-flex align-items-center gap-2">
+                <span class="material-symbols-outlined">description</span> Request Digital NOC
+            </a>
+        </div>
+    </div>
+
+    <!-- Milestone Badges Grid -->
+    <div class="col-12">
+        <div class="md-card p-4">
+            <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined text-warning">stars</span>
+                Earned Milestone Badges
+            </h5>
+            <div class="row g-3">
+                {% for sb in badges %}
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                    <div class="p-3 rounded-3 border bg-white shadow-sm text-center h-100 d-flex flex-column justify-content-center" style="border-top: 4px solid {{ sb.badge.badge_color }} !important;">
+                        <div class="fs-1 mb-1 text-warning">
+                            <span class="material-symbols-outlined" style="font-size: 38px; color: {{ sb.badge.badge_color }};">{{ sb.badge.icon }}</span>
+                        </div>
+                        <h6 class="fw-bold mb-1">{{ sb.badge.title }}</h6>
+                        <small class="text-muted mb-2">{{ sb.badge.description }}</small>
+                        <span class="badge bg-light text-muted border rounded-pill mt-auto">Unlocked: {{ sb.awarded_at|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-3 text-muted">
+                    Complete all assignments or achieve 90%+ in activities to unlock milestone badges!
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Official Certificates Gallery -->
+    <div class="col-12">
+        <h4 class="fw-bold brand-font mb-3">Institutional Appreciation & Excellence Certificates</h4>
+        <div class="row g-4">
+            {% for cert in certificates %}
+            <div class="col-md-6 col-lg-4">
+                <div class="md-card h-100 d-flex flex-column certificate-preview-box">
+                    <div class="text-center mb-3">
+                        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1 rounded-pill mb-2 fw-bold">
+                            {{ cert.certificate_id }}
+                        </span>
+                        <h5 class="fw-bold text-dark mb-1">{{ cert.title }}</h5>
+                        <small class="text-muted">Issued on {{ cert.issue_date|date:"F d, Y" }}</small>
+                    </div>
+
+                    <div class="p-3 bg-light rounded-3 mb-3 text-center flex-grow-1">
+                        <p class="small mb-2 text-secondary">{{ cert.achievement_text }}</p>
+                        {% if cert.score_percentage > 0 %}
+                            <span class="badge bg-success fs-6 px-3 py-1">Score: {{ cert.score_percentage }}%</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- QR and Download Actions -->
+                    <div class="d-flex gap-2 border-top pt-3 mt-auto">
+                        <a href="{% url 'certificates:download_certificate_pdf' cert.certificate_id %}" class="btn btn-md-primary flex-grow-1 justify-content-center">
+                            <span class="material-symbols-outlined">download</span> Download PDF
+                        </a>
+                        <a href="{% url 'certificates:verify_certificate' cert.uuid %}" target="_blank" class="btn btn-outline-secondary" title="Public Verification URL">
+                            <span class="material-symbols-outlined">qr_code</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="md-card p-5 text-center text-muted">
+                    <span class="material-symbols-outlined fs-1 text-warning mb-2">military_tech</span>
+                    <h5>No Certificates Earned Yet</h5>
+                    <p class="small">Achieve 90%+ in Academics, 100% in Assignments, or complete required extracurricular credits to trigger automatic certificates!</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

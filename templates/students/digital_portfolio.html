@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load core_tags %}
+
+{% block title %}Digital Portfolio - {{ student.user.get_full_name }} | EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Portfolio Hero Header -->
+    <div class="col-12">
+        <div class="hero-gradient p-4 p-md-5">
+            <div class="row align-items-center g-4">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center gap-3 mb-2 flex-wrap">
+                        <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold">PRN: {{ student.prn }}</span>
+                        <span class="badge bg-light text-primary px-3 py-1 rounded-pill fw-bold">{{ student.branch.name }}</span>
+                        <span class="badge bg-success px-3 py-1 rounded-pill">Verified Academic Record</span>
+                    </div>
+                    <h1 class="text-white fw-bold mb-2 display-6">{{ student.user.get_full_name }}</h1>
+                    <p class="text-white text-opacity-90 fs-5 mb-3">{{ student.headline }}</p>
+                    <p class="text-white text-opacity-75 small mb-3">{{ student.bio|default:'Passionate engineering student committed to academic excellence, continuous skill enhancement, and extracurricular community impact.' }}</p>
+                    
+                    <div class="d-flex gap-2 flex-wrap">
+                        {% if student.github_url %}
+                            <a href="{{ student.github_url }}" target="_blank" class="btn btn-sm btn-light d-inline-flex align-items-center gap-1">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">code</span> GitHub
+                            </a>
+                        {% endif %}
+                        {% if student.linkedin_url %}
+                            <a href="{{ student.linkedin_url }}" target="_blank" class="btn btn-sm btn-light d-inline-flex align-items-center gap-1">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">link</span> LinkedIn
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'students:digital_id_card' student.id %}" class="btn btn-sm btn-outline-light d-inline-flex align-items-center gap-1">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">qr_code_2</span> View ID Card
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Overall Progress Metric on Hero -->
+                <div class="col-md-4 text-center">
+                    <div class="p-4 rounded-4 bg-white bg-opacity-10 backdrop-blur border border-white border-opacity-25 text-white">
+                        <div class="small text-uppercase fw-bold text-warning">Verified Holistic Score</div>
+                        <div class="display-4 fw-bold my-1">{{ overall_progress }}%</div>
+                        <div class="small text-white text-opacity-75">Academic Avg: {{ academic_pct }}% | Attendance: {{ student.attendance_percentage }}%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skills Bar -->
+    <div class="col-12">
+        <div class="md-card p-3">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <strong class="text-primary small text-uppercase me-2"><span class="material-symbols-outlined">psychology</span> Technical Skills:</strong>
+                {% for skill in student.skills|split_string:"," %}
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill fw-semibold">{{ skill }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Academic Records Breakdown (Plan 2 Section 32) -->
+    <div class="col-lg-6">
+        <div class="md-card h-100">
+            <div class="md-card-header bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">school</span>
+                    <h5 class="mb-0 fw-bold">Academic Performance Breakdown</h5>
+                </div>
+            </div>
+            <div class="md-card-body">
+                <div class="d-flex flex-column gap-3">
+                    {% for sub_stat in subjects_progress %}
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold">{{ sub_stat.subject.name }} ({{ sub_stat.subject.code }})</span>
+                            <span class="badge {{ sub_stat.badge_class }}">{{ sub_stat.weighted_score }}%</span>
+                        </div>
+                        <div class="progress progress-custom">
+                            <div class="progress-bar progress-bar-{{ sub_stat.color_status }}" style="width: {{ sub_stat.weighted_score }}%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extracurricular Activities Summary -->
+    <div class="col-lg-6">
+        <div class="md-card h-100">
+            <div class="md-card-header bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-success">military_tech</span>
+                    <h5 class="mb-0 fw-bold">Extracurricular Engagement</h5>
+                </div>
+            </div>
+            <div class="md-card-body">
+                <div class="d-flex flex-column gap-3">
+                    {% for act in activity_progress %}
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold">{{ act.category.name }}</span>
+                            <span class="small fw-bold text-{{ act.color_status }}">{{ act.percentage }}% ({{ act.points_earned }} pts)</span>
+                        </div>
+                        <div class="progress progress-custom">
+                            <div class="progress-bar progress-bar-{{ act.color_status }}" style="width: {{ act.percentage }}%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approved Project Submissions -->
+    <div class="col-12">
+        <div class="md-card">
+            <div class="md-card-header bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-info">code</span>
+                    <h5 class="mb-0 fw-bold">Verified Microprojects & Technical Work</h5>
+                </div>
+            </div>
+            <div class="md-card-body">
+                <div class="row g-3">
+                    {% for sub in approved_submissions %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="p-3 bg-light rounded-3 border h-100 d-flex flex-column">
+                            <span class="badge bg-primary px-2 py-1 mb-2 align-self-start">{{ sub.task.subject.code }}</span>
+                            <h6 class="fw-bold mb-1">{{ sub.task.title }}</h6>
+                            <p class="small text-muted mb-2 flex-grow-1">{{ sub.task.description|default:'Technical implementation milestone.' }}</p>
+                            <div class="d-flex justify-content-between align-items-center border-top pt-2 mt-auto">
+                                <span class="badge bg-success">✓ Verified & Graded</span>
+                                {% if sub.submission_file %}
+                                    <a href="{{ sub.submission_file.url }}" target="_blank" class="btn btn-sm btn-outline-dark">View Doc</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-3 text-muted">No verified project submissions yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verified Institutional Certificates & Badges -->
+    <div class="col-12">
+        <div class="md-card">
+            <div class="md-card-header bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-warning">workspace_premium</span>
+                    <h5 class="mb-0 fw-bold">Honors, Awards & Digital Certificates</h5>
+                </div>
+            </div>
+            <div class="md-card-body">
+                <div class="row g-3">
+                    {% for cert in certificates %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="p-3 bg-white rounded-3 border certificate-preview-box h-100 d-flex flex-column">
+                            <span class="badge bg-warning text-dark px-2 py-1 mb-2 align-self-start">{{ cert.certificate_id }}</span>
+                            <h6 class="fw-bold mb-1 text-primary">{{ cert.title }}</h6>
+                            <p class="small text-muted flex-grow-1">{{ cert.achievement_text }}</p>
+                            <div class="d-flex gap-2 border-top pt-2 mt-auto">
+                                <a href="{% url 'certificates:download_certificate_pdf' cert.certificate_id %}" class="btn btn-sm btn-md-primary flex-grow-1 justify-content-center">
+                                    <span class="material-symbols-outlined" style="font-size:16px;">download</span> PDF
+                                </a>
+                                <a href="{% url 'certificates:verify_certificate' cert.uuid %}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                    Verify QR
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-3 text-muted">Certificates will automatically appear here once earned.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

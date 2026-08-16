@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Students - EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Search Bar & Filters -->
+    <div class="col-12">
+        <div class="md-card p-4">
+            <h4 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                <span class="material-symbols-outlined text-primary">search</span>
+                Student Record Directory & QR Lookup
+            </h4>
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label small fw-bold text-muted">Search by PRN, Roll No, or Name</label>
+                    <input type="text" name="q" class="form-control" placeholder="e.g. 2026CE025, Sayali, 25..." value="{{ query }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted">Branch</label>
+                    <select name="branch" class="form-select">
+                        <option value="">All Branches</option>
+                        {% for b in branches %}
+                            <option value="{{ b.id }}" {% if selected_branch == b.id|stringformat:"s" %}selected{% endif %}>{{ b.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold text-muted">Semester</label>
+                    <select name="semester" class="form-select">
+                        <option value="">All Semesters</option>
+                        {% for s in semesters %}
+                            <option value="{{ s.id }}" {% if selected_semester == s.id|stringformat:"s" %}selected{% endif %}>Sem {{ s.roman_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-md-primary w-100">
+                        <span class="material-symbols-outlined">filter_alt</span> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Student Search Results Table -->
+    <div class="col-12">
+        <div class="md-card">
+            <div class="md-card-header bg-light">
+                <h5 class="mb-0 fw-bold">Students Found ({{ students.count }})</h5>
+            </div>
+            <div class="md-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>PRN</th>
+                                <th>Roll No</th>
+                                <th>Student Name</th>
+                                <th>Branch & Semester</th>
+                                <th>Attendance %</th>
+                                <th>Overall Progress</th>
+                                <th>Quick Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in students %}
+                            <tr>
+                                <td class="fw-bold text-primary">{{ s.prn }}</td>
+                                <td>{{ s.roll_no }}</td>
+                                <td class="fw-bold">{{ s.user.get_full_name }}</td>
+                                <td>{{ s.branch.name }} - Sem {{ s.semester.roman_name }}</td>
+                                <td><span class="badge bg-success bg-opacity-10 text-success">{{ s.attendance_percentage }}%</span></td>
+                                <td>
+                                    <span class="pill-badge pill-badge-{{ s.get_overall_color_status }}">
+                                        {{ s.get_overall_progress }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <a href="{% url 'students:qr_progress_profile' s.qr_token %}" class="btn btn-sm btn-md-primary">
+                                            <span class="material-symbols-outlined" style="font-size:16px;">qr_code_2</span> Progress
+                                        </a>
+                                        <a href="{% url 'students:portfolio' s.id %}" class="btn btn-sm btn-outline-secondary">
+                                            Portfolio
+                                        </a>
+                                        <a href="{% url 'students:digital_id_card_detail' s.id %}" class="btn btn-sm btn-outline-dark">
+                                            ID Card
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">No student records found matching your query.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

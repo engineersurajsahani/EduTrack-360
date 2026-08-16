@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}NOC Verification - {{ noc.noc_id }} | EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-8 col-lg-6">
+        <div class="md-card p-4 p-md-5 text-center certificate-preview-box" style="border-color: #00897b !important;">
+            <div class="d-inline-flex p-3 rounded-circle bg-success bg-opacity-10 text-success mb-3">
+                <span class="material-symbols-outlined" style="font-size: 56px;">fact_check</span>
+            </div>
+
+            <div class="pill-badge pill-badge-green mb-3 fs-6">
+                <span class="material-symbols-outlined">check_circle</span>
+                OFFICIAL DIGITAL NO OBJECTION CERTIFICATE
+            </div>
+
+            <h3 class="fw-bold brand-font text-dark mb-1">Institutional Clearance Record</h3>
+            <div class="badge bg-light text-dark border px-3 py-1 mb-4">NOC ID: {{ noc.noc_id }}</div>
+
+            <!-- Student Card Info -->
+            <div class="p-4 bg-light rounded-4 border text-start mb-4">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <small class="text-muted text-uppercase fw-bold">Student Name</small>
+                        <div class="fw-bold fs-5 text-dark">{{ student.user.get_full_name }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted text-uppercase fw-bold">PRN & Roll Number</small>
+                        <div class="fw-bold text-dark">{{ student.prn }} (Roll: {{ student.roll_no }})</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted text-uppercase fw-bold">Department & Branch</small>
+                        <div class="fw-bold text-dark">{{ student.branch.name }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <small class="text-muted text-uppercase fw-bold">Issue Date</small>
+                        <div class="fw-bold text-dark">{{ noc.issued_at|date:"F d, Y" }}</div>
+                    </div>
+                    <div class="col-12 border-top pt-2">
+                        <small class="text-muted text-uppercase fw-bold">Declared Purpose</small>
+                        <div class="fw-bold text-secondary">{{ noc.purpose }}</div>
+                    </div>
+                    <div class="col-12 border-top pt-2">
+                        <small class="text-muted text-uppercase fw-bold">5-Point Clearance Verification</small>
+                        <div class="d-flex flex-wrap gap-1 mt-1">
+                            <span class="badge bg-success">✓ Central Library</span>
+                            <span class="badge bg-success">✓ Academic Tasks</span>
+                            <span class="badge bg-success">✓ Department Dues</span>
+                            <span class="badge bg-success">✓ Engineering Labs</span>
+                            <span class="badge bg-success">✓ Accounts / Fees</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="small text-muted mb-4">
+                <strong>Status:</strong> <span class="text-success fw-bold">NO OUTSTANDING DUES OR OBLIGATIONS</span><br>
+                <span>Digital Hash: SHA256-NOC-{{ noc.uuid.hex|slice:":16"|upper }}</span>
+            </div>
+
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{% url 'certificates:download_noc_pdf' noc.noc_id %}" class="btn btn-md-secondary">
+                    <span class="material-symbols-outlined">download</span> Download Signed PDF
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

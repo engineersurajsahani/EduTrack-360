@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load core_tags %}
+
+{% block title %}{{ subject.name }} ({{ subject.code }}) - EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Subject Banner -->
+    <div class="col-12">
+        <div class="hero-gradient d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <span class="badge bg-warning text-dark px-3 py-1 mb-2 fw-bold">{{ subject.code }}</span>
+                <h2 class="text-white mb-1 fw-bold">{{ subject.name }}</h2>
+                <p class="text-white text-opacity-75 mb-0">
+                    {{ subject.branch.name }} | Semester {{ subject.semester.roman_name }} | Faculty: {{ subject.assigned_faculty.user.get_full_name|default:'Department Faculty' }}
+                </p>
+            </div>
+            {% if student_stats %}
+            <div class="bg-white bg-opacity-20 p-3 rounded-3 text-white text-center">
+                <div class="small text-uppercase fw-bold">Subject Completion</div>
+                <div class="fs-2 fw-bold text-warning">{{ student_stats.weighted_score }}%</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Section 1: Assignments (Plan 2 Section 7) -->
+    <div class="col-md-6">
+        <div class="md-card h-100">
+            <div class="md-card-header bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">assignment</span>
+                    <h5 class="mb-0 fw-bold">Assignments</h5>
+                </div>
+                <span class="badge bg-primary">Weight: {{ subject.assignment_weight }}%</span>
+            </div>
+            <div class="md-card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for task in assignments %}
+                    {% with sub=submissions_dict|dict_lookup:task.id %}
+                    <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold">{{ task.title }}</div>
+                            <small class="text-muted">Due: {{ task.due_date|default:'End of Term' }} | Max Marks: {{ task.max_marks }}</small>
+                            {% if sub.faculty_remark %}
+                                <div class="small text-danger mt-1"><em>Remark: {{ sub.faculty_remark }}</em></div>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if sub %}
+                                {% if sub.status == 'APPROVED' %}
+                                    <span class="badge bg-success">✓ Approved ({{ sub.marks_obtained }}/{{ task.max_marks }})</span>
+                                {% elif sub.status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark">🟡 Pending</span>
+                                {% elif sub.status == 'REJECTED' %}
+                                    <span class="badge bg-danger">✗ Rejected</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">Not Submitted</span>
+                            {% endif %}
+                            
+                            <a href="{% url 'academics:task_detail' task.id %}" class="btn btn-sm btn-outline-primary">
+                                {% if sub %}View{% else %}Submit{% endif %}
+                            </a>
+                        </div>
+                    </li>
+                    {% endwith %}
+                    {% empty %}
+                    <li class="list-group-item text-muted text-center py-3">No assignments created yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Microproject (Proposal, Report, PPT, Viva) (Plan 2 Section 7) -->
+    <div class="col-md-6">
+        <div class="md-card h-100">
+            <div class="md-card-header bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-info">developer_board</span>
+                    <h5 class="mb-0 fw-bold">Microproject Milestones</h5>
+                </div>
+                <span class="badge bg-info text-dark">Weight: {{ subject.microproject_weight }}%</span>
+            </div>
+            <div class="md-card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for task in microprojects %}
+                    {% with sub=submissions_dict|dict_lookup:task.id %}
+                    <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold">{{ task.title }}</div>
+                            <small class="text-muted">{{ task.get_task_type_display }} | Max: {{ task.max_marks }}</small>
+                            {% if sub.faculty_remark %}
+                                <div class="small text-danger mt-1"><em>Remark: {{ sub.faculty_remark }}</em></div>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if sub %}
+                                {% if sub.status == 'APPROVED' %}
+                                    <span class="badge bg-success">✓ Approved</span>
+                                {% elif sub.status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark">🟡 Pending</span>
+                                {% elif sub.status == 'REJECTED' %}
+                                    <span class="badge bg-danger">✗ Rejected</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">Pending Upload</span>
+                            {% endif %}
+                            
+                            <a href="{% url 'academics:task_detail' task.id %}" class="btn btn-sm btn-outline-primary">
+                                {% if sub %}View{% else %}Submit{% endif %}
+                            </a>
+                        </div>
+                    </li>
+                    {% endwith %}
+                    {% empty %}
+                    <li class="list-group-item text-muted text-center py-3">No microproject tasks created yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Practicals (Plan 2 Section 7) -->
+    <div class="col-md-6">
+        <div class="md-card h-100">
+            <div class="md-card-header bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-success">science</span>
+                    <h5 class="mb-0 fw-bold">Practicals & Lab Experiments</h5>
+                </div>
+                <span class="badge bg-success">Weight: {{ subject.practical_weight }}%</span>
+            </div>
+            <div class="md-card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for task in practicals %}
+                    {% with sub=submissions_dict|dict_lookup:task.id %}
+                    <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold">{{ task.title }}</div>
+                            <small class="text-muted">Max: {{ task.max_marks }}</small>
+                            {% if sub.faculty_remark %}
+                                <div class="small text-danger mt-1"><em>Remark: {{ sub.faculty_remark }}</em></div>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if sub %}
+                                {% if sub.status == 'APPROVED' %}
+                                    <span class="badge bg-success">✓ Verified</span>
+                                {% elif sub.status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark">🟡 Pending</span>
+                                {% elif sub.status == 'REJECTED' %}
+                                    <span class="badge bg-danger">✗ Rejected</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">Not Submitted</span>
+                            {% endif %}
+                            
+                            <a href="{% url 'academics:task_detail' task.id %}" class="btn btn-sm btn-outline-primary">Submit</a>
+                        </div>
+                    </li>
+                    {% endwith %}
+                    {% empty %}
+                    <li class="list-group-item text-muted text-center py-3">No practicals defined yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 4: Lab Manuals & PPTs (Plan 2 Section 7) -->
+    <div class="col-md-6">
+        <div class="md-card h-100">
+            <div class="md-card-header bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-warning">menu_book</span>
+                    <h5 class="mb-0 fw-bold">Lab Manuals & Presentations</h5>
+                </div>
+                <span class="badge bg-warning text-dark">Weight: {{ subject.ppt_manual_weight }}%</span>
+            </div>
+            <div class="md-card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for task in ppt_manuals %}
+                    {% with sub=submissions_dict|dict_lookup:task.id %}
+                    <li class="list-group-item p-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold">{{ task.title }}</div>
+                            <small class="text-muted">{{ task.get_task_type_display }}</small>
+                            {% if sub.faculty_remark %}
+                                <div class="small text-danger mt-1"><em>Remark: {{ sub.faculty_remark }}</em></div>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if sub %}
+                                {% if sub.status == 'APPROVED' %}
+                                    <span class="badge bg-success">✓ Verified</span>
+                                {% elif sub.status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark">🟡 Pending</span>
+                                {% elif sub.status == 'REJECTED' %}
+                                    <span class="badge bg-danger">✗ Rejected</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="badge bg-secondary">Pending</span>
+                            {% endif %}
+                            
+                            <a href="{% url 'academics:task_detail' task.id %}" class="btn btn-sm btn-outline-primary">Upload</a>
+                        </div>
+                    </li>
+                    {% endwith %}
+                    {% empty %}
+                    <li class="list-group-item text-muted text-center py-3">No lab manual tasks specified.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

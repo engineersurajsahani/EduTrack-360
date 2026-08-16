@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EduTrack 360 - Smart Student Progress & Digital Portfolio{% endblock %}</title>
+    
+    <!-- Google Fonts & Material Symbols -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom Material 3 Theme CSS -->
+    <link rel="stylesheet" href="/static/css/material_theme.css">
+    
+    <!-- Chart.js & QR Scanner Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Top App Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container-fluid px-lg-4">
+            <!-- Brand Logo & Name -->
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{% if user.is_authenticated %}{% url 'dashboard:redirect_view' %}{% else %}{% url 'accounts:login' %}{% endif %}">
+                <span class="brand-badge">
+                    <span class="material-symbols-outlined">qr_code_2</span>
+                    EduTrack 360
+                </span>
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3 gap-1">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom {% if request.resolver_match.url_name == 'student_dashboard' or request.resolver_match.url_name == 'faculty_dashboard' or request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}" href="{% url 'dashboard:redirect_view' %}">
+                                <span class="material-symbols-outlined">dashboard</span> Dashboard
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom {% if 'academics' in request.path %}active{% endif %}" href="{% url 'academics:subject_list' %}">
+                                <span class="material-symbols-outlined">menu_book</span> Academics & Tasks
+                            </a>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom {% if 'activities' in request.path %}active{% endif %}" href="{% url 'activities:activity_hub' %}">
+                                <span class="material-symbols-outlined">workspace_premium</span> Extracurriculars
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom {% if 'certificates' in request.path %}active{% endif %}" href="{% url 'certificates:my_certificates' %}">
+                                <span class="material-symbols-outlined">verified</span> Awards & Certificates
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom {% if request.resolver_match.url_name == 'leaderboard' %}active{% endif %}" href="{% url 'dashboard:leaderboard' %}">
+                                <span class="material-symbols-outlined">leaderboard</span> Leaderboard
+                            </a>
+                        </li>
+
+                        {% if is_faculty or is_admin %}
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom text-primary fw-bold" href="{% url 'dashboard:qr_scanner' %}">
+                                <span class="material-symbols-outlined text-primary">qr_code_scanner</span> Scan QR
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom" href="{% url 'students:student_search' %}">
+                                <span class="material-symbols-outlined">search</span> Search Students
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom" href="{% url 'certificates:admin_noc_list' %}">
+                                <span class="material-symbols-outlined">fact_check</span> NOC Requests
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% if is_student %}
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom" href="{% url 'students:digital_id_card' %}">
+                                <span class="material-symbols-outlined">badge</span> My QR ID
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom" href="{% url 'students:portfolio' %}">
+                                <span class="material-symbols-outlined">account_circle</span> Portfolio
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link nav-link-custom" href="{% url 'certificates:request_noc' %}">
+                                <span class="material-symbols-outlined">description</span> Digital NOC
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+
+                <!-- User Profile & Status Pill -->
+                <ul class="navbar-nav ms-auto align-items-center gap-2">
+                    {% if user.is_authenticated %}
+                        {% if is_faculty or is_admin %}
+                            {% if total_pending_reviews > 0 %}
+                            <li class="nav-item">
+                                <span class="badge bg-danger rounded-pill px-3 py-2 d-flex align-items-center gap-1 shadow-sm">
+                                    <span class="material-symbols-outlined" style="font-size:16px;">pending_actions</span>
+                                    {{ total_pending_reviews }} Pending Reviews
+                                </span>
+                            </li>
+                            {% endif %}
+                        {% elif is_student and student_profile %}
+                            <li class="nav-item d-none d-md-block">
+                                <span class="pill-badge pill-badge-{{ student_color_status }}">
+                                    <span class="material-symbols-outlined" style="font-size:16px;">donut_large</span>
+                                    Overall Progress: {{ student_overall_progress }}%
+                                </span>
+                            </li>
+                        {% endif %}
+
+                        <!-- User Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width:36px; height:36px;">
+                                    {{ user.first_name|default:user.username|slice:":1"|upper }}
+                                </div>
+                                <div class="d-none d-sm-block text-start">
+                                    <div class="fw-bold" style="font-size: 0.88rem; line-height: 1.1;">{{ user.get_full_name|default:user.username }}</div>
+                                    <small class="text-muted" style="font-size: 0.72rem;">{{ user.get_role_display }}</small>
+                                </div>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg" style="border-radius: var(--radius-md);">
+                                <li class="px-3 py-2 border-bottom">
+                                    <div class="fw-bold">{{ user.get_full_name|default:user.username }}</div>
+                                    <div class="small text-muted">{{ user.email }}</div>
+                                </li>
+                                {% if is_student %}
+                                <li><a class="dropdown-menu-item dropdown-item d-flex align-items-center gap-2 py-2" href="{% url 'students:profile' %}"><span class="material-symbols-outlined">person</span> Edit Profile</a></li>
+                                <li><a class="dropdown-menu-item dropdown-item d-flex align-items-center gap-2 py-2" href="{% url 'students:digital_id_card' %}"><span class="material-symbols-outlined">qr_code</span> My QR ID Card</a></li>
+                                <li><a class="dropdown-menu-item dropdown-item d-flex align-items-center gap-2 py-2" href="{% url 'students:portfolio' %}"><span class="material-symbols-outlined">auto_stories</span> Public Portfolio</a></li>
+                                {% else %}
+                                <li><a class="dropdown-menu-item dropdown-item d-flex align-items-center gap-2 py-2" href="{% url 'accounts:profile' %}"><span class="material-symbols-outlined">manage_accounts</span> Account Settings</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger d-flex align-items-center gap-2 py-2" href="{% url 'accounts:logout' %}"><span class="material-symbols-outlined">logout</span> Log Out</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="btn btn-md-primary" href="{% url 'accounts:login' %}">
+                                <span class="material-symbols-outlined">login</span> Sign In
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Alert Messages -->
+    <div class="container-fluid px-lg-4 mt-3">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm border-0 d-flex align-items-center gap-2" role="alert" style="border-radius: var(--radius-md);">
+                    <span class="material-symbols-outlined">
+                        {% if message.tags == 'success' %}check_circle{% elif message.tags == 'danger' or message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
+                    </span>
+                    <div>{{ message }}</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Main Content Body -->
+    <main class="container-fluid px-lg-4 py-3 flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer text-center">
+        <div class="container-fluid px-4">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-md-start mb-2 mb-md-0">
+                    <span class="fw-bold brand-font text-dark">EduTrack 360</span> &copy; 2026. {{ TAGLINE }}
+                </div>
+                <div class="col-md-6 text-md-end text-muted">
+                    <span>Autonomous Institution | Accredited by NAAC with 'A+' Grade</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/qr_scanner.js"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

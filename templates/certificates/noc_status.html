@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Digital NOC - EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-3">
+    <div class="col-lg-8">
+        <div class="md-card">
+            <div class="md-card-header bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-success">fact_check</span>
+                    <h5 class="mb-0 fw-bold">Digital No Objection Certificate (NOC)</h5>
+                </div>
+                {% if noc %}
+                    <span class="badge {% if noc.is_approved %}bg-success{% else %}bg-warning text-dark{% endif %} px-3 py-2">
+                        {% if noc.is_approved %}✓ ALL CLEARANCES APPROVED{% else %}🟡 CLEARANCE IN PROGRESS{% endif %}
+                    </span>
+                {% endif %}
+            </div>
+
+            <div class="md-card-body">
+                {% if noc %}
+                    <!-- NOC Status Card -->
+                    <div class="p-3 bg-light rounded-3 mb-4 border">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                            <div>
+                                <span class="badge bg-primary px-3 py-1">Ref ID: {{ noc.noc_id }}</span>
+                                <div class="fw-bold mt-1 fs-5">{{ student.user.get_full_name }} (PRN: {{ student.prn }})</div>
+                                <small class="text-muted">Branch: {{ student.branch.name }} | Sem {{ student.semester.roman_name }}</small>
+                            </div>
+                            <div>
+                                <small class="text-muted">Requested on: {{ noc.issued_at|date:"M d, Y" }}</small>
+                            </div>
+                        </div>
+                        <div>
+                            <strong>Purpose:</strong> {{ noc.purpose }}
+                        </div>
+                    </div>
+
+                    <!-- 5-Point Clearance Table (Plan 2 Section 34) -->
+                    <h6 class="fw-bold mb-3">5-Point Institutional Clearance Checklist:</h6>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Section / Department</th>
+                                    <th>Requirement Details</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">1. Central Library</td>
+                                    <td class="small text-muted">All books, journals and library cards returned</td>
+                                    <td>
+                                        {% if noc.library_clearance %}
+                                            <span class="badge bg-success">✓ Cleared</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">2. Academic Submissions</td>
+                                    <td class="small text-muted">All subject assignments, microprojects & journals approved</td>
+                                    <td>
+                                        {% if noc.academic_clearance %}
+                                            <span class="badge bg-success">✓ Cleared</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Pending Approvals</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">3. Engineering Department</td>
+                                    <td class="small text-muted">Departmental projects and faculty approvals confirmed</td>
+                                    <td>
+                                        {% if noc.department_clearance %}
+                                            <span class="badge bg-success">✓ Cleared</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">4. Engineering Labs & Workshop</td>
+                                    <td class="small text-muted">Lab hardware kits, components and equipment accounted for</td>
+                                    <td>
+                                        {% if noc.lab_clearance %}
+                                            <span class="badge bg-success">✓ Cleared</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">5. Accounts & Student Dues</td>
+                                    <td class="small text-muted">No outstanding tuition, exam or hostel fees</td>
+                                    <td>
+                                        {% if noc.fees_clearance %}
+                                            <span class="badge bg-success">✓ Cleared</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    {% if noc.is_approved %}
+                        <div class="p-4 bg-success bg-opacity-10 rounded-3 border border-success text-center">
+                            <h5 class="fw-bold text-success mb-2">🎉 Congratulations! Your Digital NOC is Ready</h5>
+                            <p class="small text-muted mb-3">All institutional clearances have been verified. You can now download the official signed PDF certificate.</p>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="{% url 'certificates:download_noc_pdf' noc.noc_id %}" class="btn btn-success fw-bold px-4 py-2">
+                                    <span class="material-symbols-outlined">download</span> Download Official NOC PDF
+                                </a>
+                                <a href="{% url 'certificates:verify_noc' noc.uuid %}" target="_blank" class="btn btn-outline-secondary">
+                                    <span class="material-symbols-outlined">qr_code</span> Public Verification
+                                </a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            Your clearance request is currently under review by academic and department coordinators. Once all 5 criteria are cleared, the downloadable NOC will be unlocked automatically.
+                        </div>
+                    {% endif %}
+
+                {% else %}
+                    <!-- Request Form -->
+                    <div class="text-center py-4">
+                        <div class="d-inline-flex p-3 rounded-circle bg-primary bg-opacity-10 text-primary mb-3">
+                            <span class="material-symbols-outlined" style="font-size:48px;">receipt_long</span>
+                        </div>
+                        <h4 class="fw-bold mb-2">Request Digital No Objection Certificate</h4>
+                        <p class="text-muted small mb-4">Submit a formal digital clearance request for semester examinations, internships, or college transfers.</p>
+
+                        <form method="post" class="text-start">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-muted">Purpose of NOC</label>
+                                <input type="text" name="purpose" class="form-control form-control-lg" value="Semester Exam Clearance & Academic Verification" required>
+                            </div>
+                            <button type="submit" class="btn btn-md-primary w-100 py-3 justify-content-center">
+                                <span class="material-symbols-outlined">send</span> Initiate 5-Point Digital Clearance Check
+                            </button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

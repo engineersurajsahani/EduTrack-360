@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Digital NOC Clearances - EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="hero-gradient d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="text-white mb-1 fw-bold">Digital NOC Clearance Management</h2>
+                <p class="text-white text-opacity-75 mb-0">Verify and authorize institutional 5-point clearances for student examination & exit permissions.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="md-card">
+            <div class="md-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>NOC ID</th>
+                                <th>Student</th>
+                                <th>Branch & Sem</th>
+                                <th>Purpose</th>
+                                <th>Clearance Checkpoints</th>
+                                <th>Status</th>
+                                <th>Manage Clearance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for noc in noc_list %}
+                            <tr>
+                                <td class="fw-bold text-primary">{{ noc.noc_id }}</td>
+                                <td>
+                                    <div class="fw-bold">{{ noc.student.user.get_full_name }}</div>
+                                    <small class="text-muted">PRN: {{ noc.student.prn }}</small>
+                                </td>
+                                <td>{{ noc.student.branch.code }} - Sem {{ noc.student.semester.roman_name }}</td>
+                                <td><small>{{ noc.purpose }}</small></td>
+                                <td>
+                                    <div class="d-flex gap-1 flex-wrap">
+                                        <span class="badge {% if noc.library_clearance %}bg-success{% else %}bg-secondary{% endif %}" title="Library">Lib</span>
+                                        <span class="badge {% if noc.academic_clearance %}bg-success{% else %}bg-secondary{% endif %}" title="Academics">Acad</span>
+                                        <span class="badge {% if noc.department_clearance %}bg-success{% else %}bg-secondary{% endif %}" title="Dept">Dept</span>
+                                        <span class="badge {% if noc.lab_clearance %}bg-success{% else %}bg-secondary{% endif %}" title="Lab">Lab</span>
+                                        <span class="badge {% if noc.fees_clearance %}bg-success{% else %}bg-secondary{% endif %}" title="Fees">Fees</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if noc.is_approved %}
+                                        <span class="badge bg-success">✓ APPROVED</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">PENDING</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-md-primary" data-bs-toggle="modal" data-bs-target="#nocModal{{ noc.id }}">
+                                        Edit Clearance
+                                    </button>
+
+                                    <!-- NOC Clearance Edit Modal -->
+                                    <div class="modal fade" id="nocModal{{ noc.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title fw-bold">Update Clearance Checkpoints ({{ noc.noc_id }})</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form action="{% url 'certificates:update_noc_clearance' noc.id %}" method="post">
+                                                    {% csrf_token %}
+                                                    <div class="modal-body">
+                                                        <div class="mb-3 p-3 bg-light rounded-3">
+                                                            <div class="fw-bold">{{ noc.student.user.get_full_name }} (PRN: {{ noc.student.prn }})</div>
+                                                            <div class="small text-muted">{{ noc.purpose }}</div>
+                                                        </div>
+
+                                                        <div class="form-check form-switch mb-3">
+                                                            <input class="form-check-input" type="checkbox" name="library_clearance" id="lib{{ noc.id }}" {% if noc.library_clearance %}checked{% endif %}>
+                                                            <label class="form-check-label fw-bold" for="lib{{ noc.id }}">1. Central Library Clearance</label>
+                                                        </div>
+                                                        <div class="form-check form-switch mb-3">
+                                                            <input class="form-check-input" type="checkbox" name="academic_clearance" id="acad{{ noc.id }}" {% if noc.academic_clearance %}checked{% endif %}>
+                                                            <label class="form-check-label fw-bold" for="acad{{ noc.id }}">2. Academic Tasks Clearance</label>
+                                                        </div>
+                                                        <div class="form-check form-switch mb-3">
+                                                            <input class="form-check-input" type="checkbox" name="department_clearance" id="dept{{ noc.id }}" {% if noc.department_clearance %}checked{% endif %}>
+                                                            <label class="form-check-label fw-bold" for="dept{{ noc.id }}">3. Department Dues Clearance</label>
+                                                        </div>
+                                                        <div class="form-check form-switch mb-3">
+                                                            <input class="form-check-input" type="checkbox" name="lab_clearance" id="lab{{ noc.id }}" {% if noc.lab_clearance %}checked{% endif %}>
+                                                            <label class="form-check-label fw-bold" for="lab{{ noc.id }}">4. Engineering Lab & Workshop Clearance</label>
+                                                        </div>
+                                                        <div class="form-check form-switch mb-3">
+                                                            <input class="form-check-input" type="checkbox" name="fees_clearance" id="fees{{ noc.id }}" {% if noc.fees_clearance %}checked{% endif %}>
+                                                            <label class="form-check-label fw-bold" for="fees{{ noc.id }}">5. Tuition & Examination Fees Clearance</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                                        <button type="submit" class="btn btn-md-primary">Save Clearances</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">No NOC requests found.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

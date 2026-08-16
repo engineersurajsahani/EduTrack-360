@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Extracurricular Certificate - EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-3">
+    <div class="col-lg-8">
+        <div class="md-card">
+            <div class="md-card-header bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">upload_file</span>
+                    <h5 class="mb-0 fw-bold">Upload Activity & Extracurricular Certificate</h5>
+                </div>
+            </div>
+            <div class="md-card-body">
+                <p class="text-muted small mb-4">
+                    Submit verified credentials for extracurricular events, sports tournaments, technical hackathons, internships, or online courses to earn activity credits.
+                </p>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Activity Category</label>
+                            {{ form.category }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Event / Activity Title</label>
+                            {{ form.title }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Organizing Body / Institution</label>
+                            {{ form.organization }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Event / Completion Date</label>
+                            {{ form.event_date }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Participation Level</label>
+                            {{ form.level }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Achievement / Role</label>
+                            {{ form.achievement_role }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-muted">Certificate Proof (PDF or Image)</label>
+                            {{ form.certificate_file }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-muted">Brief Description / Outcomes</label>
+                            {{ form.description }}
+                        </div>
+                    </div>
+
+                    <!-- Points Reference Box (Plan 2 Section 22) -->
+                    <div class="mt-4 p-3 bg-light rounded-3 border">
+                        <h6 class="fw-bold small text-primary mb-2">⭐ Standard Activity Points Reference Scheme:</h6>
+                        <div class="row g-2 small text-muted">
+                            <div class="col-sm-6">• NSS Tree Plantation / Blood Donation: <strong>5 - 10 pts</strong></div>
+                            <div class="col-sm-6">• 7-Day NSS Residential Camp: <strong>15 pts</strong></div>
+                            <div class="col-sm-6">• Cultural / Sports Winner (State/National): <strong>15 - 20 pts</strong></div>
+                            <div class="col-sm-6">• Industry Internship (1-3 Months): <strong>20 pts</strong></div>
+                            <div class="col-sm-6">• Hackathon Winner / Runner-Up: <strong>20 pts</strong></div>
+                            <div class="col-sm-6">• NPTEL / Coursera Elite Course: <strong>10 - 15 pts</strong></div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="{% url 'activities:activity_hub' %}" class="btn btn-light">Cancel</a>
+                        <button type="submit" class="btn btn-md-primary">
+                            <span class="material-symbols-outlined">send</span> Submit for Faculty Verification
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

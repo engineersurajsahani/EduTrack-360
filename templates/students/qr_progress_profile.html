@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+
+{% block title %}QR Student Progress Profile - {{ student.prn }} | EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row g-4 justify-content-center">
+    <!-- QR Scan Success Header -->
+    <div class="col-12">
+        <div class="hero-gradient d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-lg" style="width:68px; height:68px; font-size: 26px;">
+                    {{ student.user.first_name|slice:":1"|upper }}
+                </div>
+                <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold">✓ INSTANT QR PROFILE</span>
+                        <h2 class="text-white mb-0 fw-bold">{{ student.user.get_full_name }}</h2>
+                    </div>
+                    <p class="text-white text-opacity-75 mb-0 mt-1">
+                        PRN: <strong>{{ student.prn }}</strong> | Roll: <strong>{{ student.roll_no }}</strong> | {{ student.branch.name }} - Sem {{ student.semester.roman_name }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a href="{% url 'students:portfolio' student.id %}" class="btn btn-light fw-bold d-inline-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined">auto_stories</span> Public Portfolio
+                </a>
+                {% if is_faculty %}
+                <a href="{% url 'dashboard:qr_scanner' %}" class="btn btn-warning text-dark fw-bold d-inline-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined">qr_code_scanner</span> Scan Next Student
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Counters (Plan 2 Section 29) -->
+    <div class="col-md-3">
+        <div class="stat-box">
+            <div class="stat-icon-wrapper bg-primary bg-opacity-10 text-primary">
+                <span class="material-symbols-outlined">assignment</span>
+            </div>
+            <div>
+                <div class="fw-bold fs-3 text-dark">{{ submissions_summary.total_tasks }}</div>
+                <div class="text-muted small">Total Submissions</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-box">
+            <div class="stat-icon-wrapper bg-success bg-opacity-10 text-success">
+                <span class="material-symbols-outlined">verified</span>
+            </div>
+            <div>
+                <div class="fw-bold fs-3 text-success">{{ submissions_summary.approved }}</div>
+                <div class="text-muted small">Approved</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-box">
+            <div class="stat-icon-wrapper bg-warning bg-opacity-10 text-warning">
+                <span class="material-symbols-outlined">hourglass_top</span>
+            </div>
+            <div>
+                <div class="fw-bold fs-3 text-warning">{{ submissions_summary.pending }}</div>
+                <div class="text-muted small">Pending</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-box">
+            <div class="stat-icon-wrapper bg-danger bg-opacity-10 text-danger">
+                <span class="material-symbols-outlined">cancel</span>
+            </div>
+            <div>
+                <div class="fw-bold fs-3 text-danger">{{ submissions_summary.rejected }}</div>
+                <div class="text-muted small">Rejected / Due</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overall Progress Meter -->
+    <div class="col-md-4">
+        <div class="md-card p-4 text-center h-100">
+            <h6 class="text-uppercase text-secondary fw-bold small mb-2">Overall Progress</h6>
+            <div class="display-3 fw-bold text-{{ color_status }} my-2">{{ overall_progress }}%</div>
+            <div class="progress progress-custom mb-3">
+                <div class="progress-bar progress-bar-{{ color_status }}" style="width: {{ overall_progress }}%;"></div>
+            </div>
+            <div class="small text-muted">
+                Academic: <strong>{{ academic_pct }}%</strong> | Attendance: <strong>{{ student.attendance_percentage }}%</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- ⚠️ Pending Work Section with Instant Evaluation (Plan 2 Section 30) -->
+    <div class="col-md-8">
+        <div class="md-card h-100 border-warning">
+            <div class="md-card-header bg-warning bg-opacity-10">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-warning">warning</span>
+                    <h5 class="mb-0 fw-bold text-dark">Pending & Action Required Work ({{ pending_tasks|length }})</h5>
+                </div>
+            </div>
+            <div class="md-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Task Title</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in pending_tasks %}
+                            <tr>
+                                <td class="fw-bold text-primary">{{ item.task.subject.code }}</td>
+                                <td>
+                                    <div class="fw-bold">{{ item.task.title }}</div>
+                                    {% if item.submission.faculty_remark %}
+                                        <div class="small text-danger">Remark: {{ item.submission.faculty_remark }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge {{ item.badge_class }}">{{ item.status_label }}</span>
+                                </td>
+                                <td>
+                                    {% if item.submission and is_faculty %}
+                                        <!-- Inline Evaluation Button & Modal -->
+                                        <button type="button" class="btn btn-sm btn-md-primary" data-bs-toggle="modal" data-bs-target="#instantEvalModal{{ item.submission.id }}">
+                                            Evaluate Now
+                                        </button>
+
+                                        <div class="modal fade" id="instantEvalModal{{ item.submission.id }}" tabindex="-1">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title fw-bold">Instant Evaluation</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <form action="{% url 'academics:review_submission' item.submission.id %}" method="post">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="next_url" value="{{ request.path }}">
+                                                        <div class="modal-body text-start">
+                                                            <div class="mb-3 p-3 bg-light rounded-3">
+                                                                <div class="fw-bold">{{ student.user.get_full_name }} ({{ item.task.subject.code }})</div>
+                                                                <div class="small text-muted">{{ item.task.title }}</div>
+                                                                {% if item.submission.submission_file %}
+                                                                    <a href="{{ item.submission.submission_file.url }}" target="_blank" class="btn btn-sm btn-outline-dark mt-2">
+                                                                        <span class="material-symbols-outlined" style="font-size:16px;">visibility</span> Open Uploaded File
+                                                                    </a>
+                                                                {% endif %}
+                                                            </div>
+
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold small">Decision</label>
+                                                                <select name="status" class="form-select" required>
+                                                                    <option value="APPROVED" selected>✓ APPROVE</option>
+                                                                    <option value="REJECTED">✗ REJECT</option>
+                                                                </select>
+                                                            </div>
+
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold small">Marks Obtained (Max: {{ item.task.max_marks }})</label>
+                                                                <input type="number" step="0.5" name="marks_obtained" class="form-control" value="{{ item.task.max_marks }}">
+                                                            </div>
+
+                                                            <div class="mb-3">
+                                                                <label class="form-label fw-bold small">Faculty Remark</label>
+                                                                <textarea name="faculty_remark" class="form-control" rows="2" placeholder="Feedback for student..."></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-md-primary">Save Evaluation</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="text-muted small">Awaiting Student Upload</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">
+                                    <span class="material-symbols-outlined text-success fs-3">check_circle</span>
+                                    <div>All student tasks are approved & up to date!</div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject Progress List -->
+    <div class="col-lg-6">
+        <div class="md-card h-100">
+            <div class="md-card-header bg-light">
+                <h5 class="mb-0 fw-bold">Subject-Wise Completion</h5>
+            </div>
+            <div class="md-card-body">
+                <div class="d-flex flex-column gap-3">
+                    {% for sub in subjects_progress %}
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold">{{ sub.subject.name }} ({{ sub.subject.code }})</span>
+                            <span class="badge {{ sub.badge_class }}">{{ sub.weighted_score }}%</span>
+                        </div>
+                        <div class="progress progress-custom">
+                            <div class="progress-bar progress-bar-{{ sub.color_status }}" style="width: {{ sub.weighted_score }}%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Progress List -->
+    <div class="col-lg-6">
+        <div class="md-card h-100">
+            <div class="md-card-header bg-light">
+                <h5 class="mb-0 fw-bold">Extracurricular Activity Completion</h5>
+            </div>
+            <div class="md-card-body">
+                <div class="d-flex flex-column gap-3">
+                    {% for act in activity_progress %}
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold">{{ act.category.name }}</span>
+                            <span class="small fw-bold text-{{ act.color_status }}">{{ act.percentage }}% ({{ act.points_earned }} pts)</span>
+                        </div>
+                        <div class="progress progress-custom">
+                            <div class="progress-bar progress-bar-{{ act.color_status }}" style="width: {{ act.percentage }}%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

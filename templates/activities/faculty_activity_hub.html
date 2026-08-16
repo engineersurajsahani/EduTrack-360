@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Extracurricular Activities - EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="hero-gradient d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="text-white mb-1 fw-bold">Extracurricular Activity Verification Portal</h2>
+                <p class="text-white text-opacity-75 mb-0">Evaluate student event participations, verify proofs, and award institutional activity credits.</p>
+            </div>
+            <span class="badge bg-warning text-dark fs-6 px-3 py-2">{{ pending_certs.count }} Pending Verification</span>
+        </div>
+    </div>
+
+    <!-- Pending Certificates List -->
+    <div class="col-12">
+        <div class="md-card">
+            <div class="md-card-header bg-light">
+                <h5 class="mb-0 fw-bold text-primary">Pending Verification Queue</h5>
+            </div>
+            <div class="md-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Category</th>
+                                <th>Activity Title</th>
+                                <th>Organization</th>
+                                <th>Level & Role</th>
+                                <th>Proof File</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cert in pending_certs %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">{{ cert.student.user.get_full_name }}</div>
+                                    <small class="text-muted">PRN: {{ cert.student.prn }}</small>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">{{ cert.category.name }}</span></td>
+                                <td class="fw-bold">{{ cert.title }}</td>
+                                <td>{{ cert.organization|default:'-' }}</td>
+                                <td>{{ cert.get_level_display }} ({{ cert.get_achievement_role_display }})</td>
+                                <td>
+                                    {% if cert.certificate_file %}
+                                        <a href="{{ cert.certificate_file.url }}" target="_blank" class="btn btn-sm btn-outline-success">View Certificate</a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'dashboard:faculty_dashboard' %}" class="btn btn-sm btn-md-primary">Evaluate on Dashboard</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">All extracurricular submissions verified!</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

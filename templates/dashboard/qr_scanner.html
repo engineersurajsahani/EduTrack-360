@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Faculty QR Scanner - EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-3">
+    <div class="col-lg-8 col-xl-6">
+        <div class="md-card p-4 text-center">
+            <div class="d-inline-flex p-3 rounded-circle bg-warning bg-opacity-10 text-warning mb-3">
+                <span class="material-symbols-outlined" style="font-size: 48px;">qr_code_scanner</span>
+            </div>
+            <h3 class="fw-bold brand-font mb-1">Instant Student QR Scanner</h3>
+            <p class="text-muted small mb-4">Point your camera at a student's ID Card QR code to open their verified academic profile & pending tasks instantly.</p>
+
+            <!-- Scanner Camera Box -->
+            <div id="qr-scanner-feedback" class="mb-3"></div>
+            
+            <div class="position-relative mx-auto mb-4 p-2 bg-dark rounded-4 shadow-inner" style="max-width: 380px; min-height: 280px;">
+                <div id="qr-reader" style="width: 100%; border-radius: 12px; overflow: hidden;"></div>
+            </div>
+
+            <!-- Camera Controls -->
+            <div class="d-flex justify-content-center gap-2 mb-4">
+                <button type="button" class="btn btn-md-primary" onclick="startCameraScanner()">
+                    <span class="material-symbols-outlined">videocam</span> Start Camera
+                </button>
+                <button type="button" class="btn btn-outline-secondary" onclick="stopCameraScanner()">
+                    <span class="material-symbols-outlined">videocam_off</span> Stop Camera
+                </button>
+            </div>
+
+            <!-- Alternative 1: Upload QR Image File -->
+            <div class="p-3 bg-light rounded-3 border mb-4 text-start">
+                <label class="form-label fw-bold small text-secondary">
+                    <span class="material-symbols-outlined" style="font-size:16px;">upload_file</span> 
+                    Option 2: Scan QR from Image File
+                </label>
+                <input type="file" class="form-control" accept="image/*" onchange="scanQrImageFile(this)">
+            </div>
+
+            <!-- Alternative 2: Direct Search by PRN -->
+            <div class="p-3 bg-light rounded-3 border text-start">
+                <label class="form-label fw-bold small text-secondary">
+                    <span class="material-symbols-outlined" style="font-size:16px;">search</span> 
+                    Option 3: Quick PRN Lookup
+                </label>
+                <form action="{% url 'students:student_search' %}" method="get" class="d-flex gap-2">
+                    <input type="text" name="q" class="form-control" placeholder="Enter PRN (e.g. 2026CE025)" required>
+                    <button type="submit" class="btn btn-md-primary">Lookup</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Auto-start camera on page load if supported
+    setTimeout(() => {
+        startCameraScanner();
+    }, 400);
+});
+</script>
+{% endblock %}

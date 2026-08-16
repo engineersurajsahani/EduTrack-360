@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Dashboard - {{ student.user.get_full_name|default:student.user.username }} | EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Top Welcome Banner & Student Profile Header -->
+    <div class="col-12">
+        <div class="hero-gradient d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-lg" style="width:72px; height:72px; font-size: 28px;">
+                    {{ student.user.first_name|default:student.user.username|slice:":1"|upper }}
+                </div>
+                <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <h2 class="text-white mb-0 fw-bold">{{ student.user.get_full_name|default:student.user.username }}</h2>
+                        <span class="badge bg-light text-primary rounded-pill px-3 py-1 fw-bold">PRN: {{ student.prn }}</span>
+                        <span class="badge bg-warning text-dark rounded-pill px-3 py-1 fw-bold">Roll No: {{ student.roll_no }}</span>
+                    </div>
+                    <p class="text-white text-opacity-75 mb-0 mt-1">
+                        {{ student.program.code }} in {{ student.branch.name }} | {{ student.academic_year.name }} - Sem {{ student.semester.roman_name }} (Div {{ student.division.name|default:'A' }})
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Action QR & Portfolio Buttons -->
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'students:digital_id_card' %}" class="btn btn-light btn-lg fw-bold d-inline-flex align-items-center gap-2 shadow-sm">
+                    <span class="material-symbols-outlined text-primary">qr_code_2</span> My QR ID Card
+                </a>
+                <a href="{% url 'students:portfolio' %}" class="btn btn-outline-light btn-lg fw-bold d-inline-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined">auto_stories</span> Public Portfolio
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Row -->
+    <div class="col-md-4">
+        <!-- Overall Progress Dial Card -->
+        <div class="md-card h-100 text-center p-4">
+            <h6 class="text-uppercase text-secondary fw-bold small mb-3">Overall Holistic Progress</h6>
+            <div class="progress-circle-wrap my-2">
+                <svg class="progress-circle-svg" viewBox="0 0 140 140">
+                    <circle class="progress-circle-bg" cx="70" cy="70" r="55"></circle>
+                    <circle class="progress-circle-fill {{ color_status }}" cx="70" cy="70" r="55" data-percentage="{{ overall_progress }}"></circle>
+                </svg>
+                <div class="progress-circle-text">
+                    <div class="progress-circle-val text-{{ color_status }}">{{ overall_progress }}%</div>
+                    <div class="progress-circle-label">Completed</div>
+                </div>
+            </div>
+            <div class="mt-3">
+                <span class="pill-badge pill-badge-{{ color_status }}">
+                    <span class="material-symbols-outlined" style="font-size:16px;">
+                        {% if color_status == 'success' %}check_circle{% elif color_status == 'warning' %}info{% else %}error{% endif %}
+                    </span>
+                    Status: {% if color_status == 'success' %}Excellent (Green){% elif color_status == 'warning' %}Progressing (Yellow){% else %}Needs Attention (Red){% endif %}
+                </span>
+            </div>
+            <div class="small text-muted mt-2">
+                Formula: Academic (50%) + Attendance (10%) + NSS (10%) + Cultural (10%) + Sports (10%) + Extra (10%)
+            </div>
+        </div>
+    </div>
+
+    <!-- Submission Summary & Attendance Counters -->
+    <div class="col-md-8">
+        <div class="row g-3 h-100">
+            <div class="col-sm-6 col-md-3">
+                <div class="stat-box h-100">
+                    <div class="stat-icon-wrapper bg-primary bg-opacity-10 text-primary">
+                        <span class="material-symbols-outlined">assignment</span>
+                    </div>
+                    <div>
+                        <div class="fw-bold fs-4 text-dark">{{ submissions_summary.total_tasks }}</div>
+                        <div class="text-muted small">Total Tasks</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="stat-box h-100">
+                    <div class="stat-icon-wrapper bg-success bg-opacity-10 text-success">
+                        <span class="material-symbols-outlined">verified</span>
+                    </div>
+                    <div>
+                        <div class="fw-bold fs-4 text-success">{{ submissions_summary.approved }}</div>
+                        <div class="text-muted small">Approved</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="stat-box h-100">
+                    <div class="stat-icon-wrapper bg-warning bg-opacity-10 text-warning">
+                        <span class="material-symbols-outlined">hourglass_top</span>
+                    </div>
+                    <div>
+                        <div class="fw-bold fs-4 text-warning">{{ submissions_summary.pending }}</div>
+                        <div class="text-muted small">Pending</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="stat-box h-100">
+                    <div class="stat-icon-wrapper bg-danger bg-opacity-10 text-danger">
+                        <span class="material-symbols-outlined">cancel</span>
+                    </div>
+                    <div>
+                        <div class="fw-bold fs-4 text-danger">{{ submissions_summary.rejected }}</div>
+                        <div class="text-muted small">Rejected / Re-upload</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance & Academic Banner -->
+            <div class="col-md-6">
+                <div class="md-card p-3 d-flex align-items-center justify-content-between h-100 bg-white">
+                    <div>
+                        <div class="text-secondary small fw-bold">ACADEMIC AVERAGE</div>
+                        <h3 class="fw-bold text-primary mb-0">{{ academic_pct }}%</h3>
+                        <small class="text-muted">Semester III Subjects Average</small>
+                    </div>
+                    <div class="p-3 bg-primary bg-opacity-10 rounded-circle text-primary">
+                        <span class="material-symbols-outlined" style="font-size:32px;">school</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="md-card p-3 d-flex align-items-center justify-content-between h-100 bg-white">
+                    <div>
+                        <div class="text-secondary small fw-bold">CURRENT ATTENDANCE</div>
+                        <h3 class="fw-bold text-success mb-0">{{ student.attendance_percentage }}%</h3>
+                        <small class="text-muted">Eligibility for exams: &gt; 75%</small>
+                    </div>
+                    <div class="p-3 bg-success bg-opacity-10 rounded-circle text-success">
+                        <span class="material-symbols-outlined" style="font-size:32px;">co_present</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Work Alert Box (From plan2 section 30) -->
+    {% if pending_tasks %}
+    <div class="col-12">
+        <div class="md-card border-warning">
+            <div class="md-card-header bg-warning bg-opacity-10">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-warning">warning</span>
+                    <h6 class="mb-0 fw-bold text-dark">PENDING / ACTION REQUIRED TASKS ({{ pending_tasks|length }})</h6>
+                </div>
+                <a href="{% url 'academics:submission_history' %}" class="btn btn-sm btn-outline-dark">View History</a>
+            </div>
+            <div class="md-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Task Title</th>
+                                <th>Type</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in pending_tasks|slice:":5" %}
+                            <tr>
+                                <td class="fw-bold text-primary">{{ item.task.subject.code }}</td>
+                                <td>{{ item.task.title }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ item.task.get_task_type_display }}</span></td>
+                                <td>{{ item.task.due_date|default:'Open' }}</td>
+                                <td>
+                                    <span class="badge {{ item.badge_class }}">{{ item.status_label }}</span>
+                                    {% if item.submission.faculty_remark %}
+                                        <div class="small text-danger mt-1"><em>Remark: {{ item.submission.faculty_remark }}</em></div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'academics:task_detail' item.task.id %}" class="btn btn-sm btn-md-primary py-1 px-3">
+                                        <span class="material-symbols-outlined" style="font-size:16px;">upload</span> 
+                                        {% if item.status == 'REJECTED' %}Re-Upload{% else %}Submit{% endif %}
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Subjects Progress Breakdown (From plan2 section 6 & 7) -->
+    <div class="col-lg-7">
+        <div class="md-card h-100">
+            <div class="md-card-header">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">menu_book</span>
+                    <h5 class="mb-0 fw-bold">Subject-Wise Academic Progress</h5>
+                </div>
+                <a href="{% url 'academics:subject_list' %}" class="btn btn-sm btn-md-outline">All Subjects</a>
+            </div>
+            <div class="md-card-body">
+                <div class="d-flex flex-column gap-4">
+                    {% for sub_stat in subjects_progress %}
+                    <div class="p-3 rounded-3 border bg-light bg-opacity-50">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <a href="{% url 'academics:subject_detail' sub_stat.subject.id %}" class="fw-bold text-dark text-decoration-none fs-6">
+                                    {{ sub_stat.subject.name }} ({{ sub_stat.subject.code }})
+                                </a>
+                                <div class="small text-muted">
+                                    Assignments: {{ sub_stat.assignments.completed }}/{{ sub_stat.assignments.total }} | 
+                                    Microprojects: {{ sub_stat.microprojects.completed }}/{{ sub_stat.microprojects.total }} | 
+                                    Practicals: {{ sub_stat.practicals.completed }}/{{ sub_stat.practicals.total }}
+                                </div>
+                            </div>
+                            <span class="badge {{ sub_stat.badge_class }} fs-6 px-3 py-2">
+                                {{ sub_stat.weighted_score }}%
+                            </span>
+                        </div>
+
+                        <!-- Progress bar with green/yellow/red gradient -->
+                        <div class="progress progress-custom">
+                            <div class="progress-bar progress-bar-{{ sub_stat.color_status }}" role="progressbar" style="width: {{ sub_stat.weighted_score }}%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extra Activities Progress (From plan2 section 16 & 24) -->
+    <div class="col-lg-5">
+        <div class="md-card h-100">
+            <div class="md-card-header">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-success">military_tech</span>
+                    <h5 class="mb-0 fw-bold">Extracurricular Activities</h5>
+                </div>
+                <a href="{% url 'activities:upload_certificate' %}" class="btn btn-sm btn-md-secondary">
+                    <span class="material-symbols-outlined" style="font-size:16px;">add</span> Upload
+                </a>
+            </div>
+            <div class="md-card-body">
+                <div class="d-flex flex-column gap-3">
+                    {% for act in activities_progress %}
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="material-symbols-outlined text-{{ act.category.color_class }}">{{ act.category.icon }}</span>
+                                <span class="fw-bold small">{{ act.category.name }}</span>
+                            </div>
+                            <span class="small fw-bold text-{{ act.color_status }}">
+                                {{ act.points_earned }}/{{ act.target_points }} pts ({{ act.percentage }}%)
+                            </span>
+                        </div>
+                        <div class="progress progress-custom" style="height: 7px;">
+                            <div class="progress-bar progress-bar-{{ act.color_status }}" role="progressbar" style="width: {{ act.percentage }}%;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Earned Badges Showcase -->
+                <div class="mt-4 pt-3 border-top">
+                    <h6 class="fw-bold small text-muted text-uppercase mb-3">Earned Milestone Badges ({{ badges.count }})</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for sb in badges %}
+                            <div class="p-2 rounded-3 border d-flex align-items-center gap-2 bg-white shadow-sm" style="border-left: 4px solid {{ sb.badge.badge_color }} !important;">
+                                <span class="material-symbols-outlined text-warning">{{ sb.badge.icon }}</span>
+                                <div>
+                                    <div class="fw-bold" style="font-size: 0.8rem;">{{ sb.badge.title }}</div>
+                                    <div class="text-muted" style="font-size: 0.68rem;">{{ sb.awarded_at|date:"M d, Y" }}</div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted small">Keep completing tasks and activities to unlock milestone badges!</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Navigation Links Footer Grid (Section 6 & 34) -->
+    <div class="col-12">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <a href="{% url 'academics:submission_history' %}" class="md-card p-3 text-decoration-none text-dark d-flex align-items-center gap-3">
+                    <div class="p-3 rounded-circle bg-primary bg-opacity-10 text-primary">
+                        <span class="material-symbols-outlined">history</span>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Submission History</div>
+                        <div class="small text-muted">View all graded tasks</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'students:portfolio' %}" class="md-card p-3 text-decoration-none text-dark d-flex align-items-center gap-3">
+                    <div class="p-3 rounded-circle bg-info bg-opacity-10 text-info">
+                        <span class="material-symbols-outlined">auto_stories</span>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Digital Portfolio</div>
+                        <div class="small text-muted">Placement ready profile</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'certificates:my_certificates' %}" class="md-card p-3 text-decoration-none text-dark d-flex align-items-center gap-3">
+                    <div class="p-3 rounded-circle bg-warning bg-opacity-10 text-warning">
+                        <span class="material-symbols-outlined">workspace_premium</span>
+                    </div>
+                    <div>
+                        <div class="fw-bold">My Certificates</div>
+                        <div class="small text-muted">Download official awards</div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'certificates:request_noc' %}" class="md-card p-3 text-decoration-none text-dark d-flex align-items-center gap-3">
+                    <div class="p-3 rounded-circle bg-success bg-opacity-10 text-success">
+                        <span class="material-symbols-outlined">fact_check</span>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Digital NOC</div>
+                        <div class="small text-muted">5-Point Clearance PDF</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

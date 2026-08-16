@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}All Certificates Issued - EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="hero-gradient d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="text-white mb-1 fw-bold">Issued Institutional Certificates Registry</h2>
+                <p class="text-white text-opacity-75 mb-0">Auditable archive of all system-generated appreciation & excellence certificates.</p>
+            </div>
+            <span class="badge bg-warning text-dark fs-6 px-3 py-2">{{ certificates.count }} Total Issued</span>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="md-card">
+            <div class="md-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Certificate ID</th>
+                                <th>Student Name</th>
+                                <th>PRN</th>
+                                <th>Award Title</th>
+                                <th>Score %</th>
+                                <th>Issue Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cert in certificates %}
+                            <tr>
+                                <td class="fw-bold text-primary">{{ cert.certificate_id }}</td>
+                                <td class="fw-bold">{{ cert.student.user.get_full_name }}</td>
+                                <td>{{ cert.student.prn }}</td>
+                                <td>{{ cert.title }}</td>
+                                <td><span class="badge bg-success">{{ cert.score_percentage }}%</span></td>
+                                <td>{{ cert.issue_date|date:"M d, Y" }}</td>
+                                <td>
+                                    <a href="{% url 'certificates:verify_certificate' cert.uuid %}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        Verify & View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">No certificates generated yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign In - EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center py-4" style="min-height: 80vh;">
+    <div class="col-md-9 col-lg-6 col-xl-5">
+        <div class="md-card p-4 p-md-5">
+            <div class="text-center mb-4">
+                <div class="d-inline-flex p-3 rounded-circle bg-primary bg-opacity-10 text-primary mb-3">
+                    <span class="material-symbols-outlined" style="font-size: 40px;">lock</span>
+                </div>
+                <h2 class="fw-bold brand-font mb-1">Welcome to EduTrack 360</h2>
+                <p class="text-muted small">"One QR Code, Complete Student Journey"</p>
+            </div>
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-secondary small">PRN / USERNAME / EMPLOYEE ID</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><span class="material-symbols-outlined">badge</span></span>
+                        {{ form.username }}
+                    </div>
+                    {% if form.username.errors %}
+                        <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-secondary small">SECURE PASSWORD</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><span class="material-symbols-outlined">key</span></span>
+                        {{ form.password }}
+                    </div>
+                    {% if form.password.errors %}
+                        <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-md-primary w-100 py-3 justify-content-center fs-5 shadow">
+                    <span class="material-symbols-outlined">login</span> Access Portal
+                </button>
+            </form>
+
+            <!-- Quick Demo Credentials Box -->
+            <div class="mt-4 p-3 bg-light rounded-3 border">
+                <div class="d-flex align-items-center gap-2 mb-2 text-primary fw-bold small">
+                    <span class="material-symbols-outlined" style="font-size:18px;">flash_on</span>
+                    Quick Demo Credentials (Click to Auto-Fill):
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="fillLogin('sayali', 'student123')">
+                        🎓 Student: Sayali (PRN: 2026CE025)
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-success" onclick="fillLogin('faculty', 'faculty123')">
+                        👩‍🏫 Faculty: Prof. Anjali
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info" onclick="fillLogin('prof_sharma', 'faculty123')">
+                        👨‍💼 HOD: Dr. Sharma
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-dark" onclick="fillLogin('admin', 'admin123')">
+                        ⚙️ Admin
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function fillLogin(user, pass) {
+    document.querySelector('input[name="username"]').value = user;
+    document.querySelector('input[name="password"]').value = pass;
+}
+</script>
+{% endblock %}

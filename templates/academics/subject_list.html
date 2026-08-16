@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}My Academic Subjects - EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="hero-gradient d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <h2 class="text-white mb-1 fw-bold">Academic Subjects & Submissions</h2>
+                <p class="text-white text-opacity-75 mb-0">
+                    {{ student.program.code }} - {{ student.branch.name }} | Semester {{ student.semester.roman_name }}
+                </p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-3 rounded-3 text-white text-center">
+                <div class="small text-uppercase fw-bold">Academic Average</div>
+                <div class="fs-3 fw-bold">{{ academic_pct }}%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subjects Grid -->
+    {% for sub_stat in subjects_data %}
+    <div class="col-md-6 col-lg-4">
+        <div class="md-card h-100 d-flex flex-column">
+            <div class="md-card-header bg-light">
+                <div>
+                    <span class="badge bg-primary px-2 py-1 mb-1">{{ sub_stat.subject.code }}</span>
+                    <h5 class="fw-bold mb-0 text-dark">{{ sub_stat.subject.name }}</h5>
+                </div>
+                <span class="badge {{ sub_stat.badge_class }} fs-6">{{ sub_stat.weighted_score }}%</span>
+            </div>
+            <div class="md-card-body flex-grow-1">
+                <!-- Progress Bar -->
+                <div class="progress progress-custom mb-3">
+                    <div class="progress-bar progress-bar-{{ sub_stat.color_status }}" style="width: {{ sub_stat.weighted_score }}%;"></div>
+                </div>
+
+                <!-- Breakdown Stats -->
+                <ul class="list-group list-group-flush small mb-3">
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span>Assignments (Weight: {{ sub_stat.subject.assignment_weight }}%)</span>
+                        <strong>{{ sub_stat.assignments.completed }}/{{ sub_stat.assignments.total }} ({{ sub_stat.assignments.percentage }}%)</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span>Microprojects (Weight: {{ sub_stat.subject.microproject_weight }}%)</span>
+                        <strong>{{ sub_stat.microprojects.completed }}/{{ sub_stat.microprojects.total }} ({{ sub_stat.microprojects.percentage }}%)</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span>Practicals (Weight: {{ sub_stat.subject.practical_weight }}%)</span>
+                        <strong>{{ sub_stat.practicals.completed }}/{{ sub_stat.practicals.total }} ({{ sub_stat.practicals.percentage }}%)</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between px-0">
+                        <span>PPT & Manual (Weight: {{ sub_stat.subject.ppt_manual_weight }}%)</span>
+                        <strong>{{ sub_stat.ppt_manual.completed }}/{{ sub_stat.ppt_manual.total }} ({{ sub_stat.ppt_manual.percentage }}%)</strong>
+                    </li>
+                </ul>
+
+                <div class="small text-muted mb-3">
+                    <strong>Faculty:</strong> {{ sub_stat.subject.assigned_faculty.user.get_full_name|default:'Department Faculty' }}
+                </div>
+            </div>
+            <div class="p-3 border-top bg-light bg-opacity-25 mt-auto">
+                <a href="{% url 'academics:subject_detail' sub_stat.subject.id %}" class="btn btn-md-primary w-100 justify-content-center">
+                    <span class="material-symbols-outlined">folder_open</span> Open Subject Portal
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

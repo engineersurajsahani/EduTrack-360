@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Control Center - EduTrack 360{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Admin Hero Banner -->
+    <div class="col-12">
+        <div class="hero-gradient d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
+            <div>
+                <h2 class="text-white mb-1 fw-bold">Admin Control Center</h2>
+                <p class="text-white text-opacity-75 mb-0">Master college administration, academic programs, faculty allocations, and institutional performance.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="/admin/" target="_blank" class="btn btn-warning text-dark fw-bold d-inline-flex align-items-center gap-2 shadow">
+                    <span class="material-symbols-outlined">settings</span> Django Admin
+                </a>
+                <a href="{% url 'dashboard:export_excel' %}" class="btn btn-light fw-bold d-inline-flex align-items-center gap-2 shadow-sm">
+                    <span class="material-symbols-outlined">download</span> Export College Records
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat Counters Grid -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-box">
+            <div class="stat-icon-wrapper bg-primary bg-opacity-10 text-primary">
+                <span class="material-symbols-outlined">groups</span>
+            </div>
+            <div>
+                <div class="fw-bold fs-3 text-dark">{{ total_students }}</div>
+                <div class="text-muted small">Total Students</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-box">
+            <div class="stat-icon-wrapper bg-success bg-opacity-10 text-success">
+                <span class="material-symbols-outlined">school</span>
+            </div>
+            <div>
+                <div class="fw-bold fs-3 text-success">{{ total_faculty }}</div>
+                <div class="text-muted small">Faculty Members</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-box">
+            <div class="stat-icon-wrapper bg-info bg-opacity-10 text-info">
+                <span class="material-symbols-outlined">menu_book</span>
+            </div>
+            <div>
+                <div class="fw-bold fs-3 text-info">{{ total_subjects }}</div>
+                <div class="text-muted small">Active Subjects</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-box">
+            <div class="stat-icon-wrapper bg-warning bg-opacity-10 text-warning">
+                <span class="material-symbols-outlined">verified</span>
+            </div>
+            <div>
+                <div class="fw-bold fs-3 text-warning">{{ total_certificates_issued }}</div>
+                <div class="text-muted small">Certificates Issued</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Department Overview Cards -->
+    <div class="col-lg-7">
+        <div class="md-card h-100">
+            <div class="md-card-header bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">domain</span>
+                    <h5 class="mb-0 fw-bold">Academic Departments</h5>
+                </div>
+            </div>
+            <div class="md-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Dept Code</th>
+                                <th>Department Name</th>
+                                <th>Branches</th>
+                                <th>Faculty</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dept in departments %}
+                            <tr>
+                                <td class="fw-bold text-primary">{{ dept.code }}</td>
+                                <td>{{ dept.name }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ dept.branch_count }} Branches</span></td>
+                                <td><span class="badge bg-primary">{{ dept.faculty_count }} Faculty</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Analytics & Actions -->
+    <div class="col-lg-5">
+        <div class="md-card h-100">
+            <div class="md-card-header bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-info">pie_chart</span>
+                    <h5 class="mb-0 fw-bold">Student Enrollment Analytics</h5>
+                </div>
+            </div>
+            <div class="md-card-body">
+                <canvas id="branchChart" style="max-height: 240px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Students Table -->
+    <div class="col-12">
+        <div class="md-card">
+            <div class="md-card-header bg-light">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="material-symbols-outlined text-success">person_add</span>
+                    <h5 class="mb-0 fw-bold">Recently Registered Students</h5>
+                </div>
+                <a href="{% url 'students:student_search' %}" class="btn btn-sm btn-outline-primary">View All Students</a>
+            </div>
+            <div class="md-card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>PRN</th>
+                                <th>Roll No</th>
+                                <th>Student Name</th>
+                                <th>Branch & Semester</th>
+                                <th>Attendance</th>
+                                <th>Overall Progress</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in recent_students %}
+                            <tr>
+                                <td class="fw-bold text-primary">{{ s.prn }}</td>
+                                <td>{{ s.roll_no }}</td>
+                                <td>{{ s.user.get_full_name|default:s.user.username }}</td>
+                                <td>{{ s.branch.name }} - Sem {{ s.semester.roman_name }}</td>
+                                <td><span class="badge bg-success bg-opacity-10 text-success fw-bold">{{ s.attendance_percentage }}%</span></td>
+                                <td>
+                                    <span class="pill-badge pill-badge-{{ s.get_overall_color_status }}">
+                                        {{ s.get_overall_progress }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'students:qr_progress_profile' s.qr_token %}" class="btn btn-sm btn-outline-primary">
+                                        View Profile
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const ctx = document.getElementById('branchChart').getContext('2d');
+    const branchLabels = {{ branch_labels_json|safe }};
+    const branchCounts = {{ branch_counts_json|safe }};
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: branchLabels,
+            datasets: [{
+                data: branchCounts,
+                backgroundColor: ['#283593', '#00897b', '#ff6f00', '#0288d1', '#7b1fa2'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            },
+            cutout: '65%'
+        }
+    });
+});
+</script>
+{% endblock %}
