@@ -1,0 +1,32 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Environment
+.env
+venv/
+env/
+ENV/
+
+# Database
+*.sqlite3
+*.sqlite3-journal
+
+# Static and media directories
+staticfiles/
+media/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary & Scratch files
+scratch/
+scratch_*.txt
+check_*.py
